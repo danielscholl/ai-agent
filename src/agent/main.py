@@ -71,7 +71,7 @@ def main():
     else:
         system_message = default_system_message
 
-    print(f"Using system message: {system_message}")
+    print("Activating agent...")
 
     messages = [
         {"role": "system", "content": system_message},
