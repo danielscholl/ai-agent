@@ -1,17 +1,45 @@
+import os
+from openai import AzureOpenAI
+from azure.identity import InteractiveBrowserCredential
+from azure.identity import get_bearer_token_provider
+import requests
+
 from dotenv import load_dotenv
 load_dotenv()
 
-import os
-import requests
-from openai import AzureOpenAI
+token_provider = get_bearer_token_provider(
+    InteractiveBrowserCredential(),
+    "https://cognitiveservices.azure.com/.default"
+)
 
 client = AzureOpenAI(
-    api_key=os.getenv("AZURE_OPENAI_API_KEY"),
+    # api_key=os.getenv("AZURE_OPENAI_API_KEY"),
     api_version="2023-05-15",
-    azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT")
+    azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
+    azure_ad_token_provider = token_provider
 )
 
 def chat_with_model(deployment_name, messages):
+    api_key = os.getenv("AZURE_OPENAI_API_KEY")
+    azure_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
+
+    if api_key:
+        client = AzureOpenAI(
+            api_key=api_key,
+            api_version="2023-05-15",
+            azure_endpoint=azure_endpoint
+        )
+    else:
+        token_provider = get_bearer_token_provider(
+            InteractiveBrowserCredential(),
+            "https://cognitiveservices.azure.com/.default"
+        )
+        client = AzureOpenAI(
+            azure_endpoint=azure_endpoint,
+            azure_ad_token_provider=token_provider,
+            api_version="2023-05-15"
+        )
+
     response = client.chat.completions.create(
         model=deployment_name,
         messages=messages
